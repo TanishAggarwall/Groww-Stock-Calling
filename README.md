@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:061B14,50:00B58B,100:083D2B&height=240&section=header&text=Stock%20Calling&fontSize=64&fontColor=FFFFFF&animation=fadeIn&fontAlignY=34&desc=Your%20portfolio.%20A%20voice.%20A%20heads-up%20when%20it%20matters.&descAlignY=55&descSize=17" width="100%" alt="Stock Calling — your portfolio, a voice, a heads-up when it matters"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:061B14,50:00B58B,100:083D2B&height=240&section=header&text=Stock%20Calling&fontSize=64&fontColor=FFFFFF&animation=fadeIn&fontAlignY=34&desc=Your%20portfolio.%20A%20voice.%20A%20heads-up%20when%20it%20matters.&descAlignY=55&descSize=17" width="100%" alt="GROWW Calling — your portfolio, a voice, a heads-up when it matters"/>
 
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&duration=3000&pause=1000&color=00B58B&center=true&vCenter=true&width=850&lines=Buy+paper+shares.+Hear+what+matters.;Crash+or+gain+%E2%86%92+Real+AI+call+%E2%86%92+Telegram;Ask+questions.+Authorize+a+paper+sale+with+your+demo+PIN.;Built+by+Team+BB+for+ProdVerse+%7E+Tech+Unbound" alt="Paper portfolios, real AI phone calls and Telegram summaries" />
 
