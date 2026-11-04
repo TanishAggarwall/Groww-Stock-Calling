@@ -7,6 +7,7 @@ import {processPaperSale,redactDemoPin} from './paper-sell.ts';
 
 export function saveSecret(key:string,value:string){
  if(!/^(OMNIDIM_API_KEY|OMNIDIM_AGENT_ID|TELEGRAM_BOT_TOKEN)$/.test(key)||/[\r\n]/.test(value))throw new Error('Invalid secret');
+ if(process.env.CLOUD_MODE==='true'&&process.env.DATABASE_URL){if(process.env[key]===value)return;throw new Error('Update cloud integration credentials in Northflank runtime variables, then redeploy.');}
  process.env[key]=value;
  const secretFile=process.env.SECRET_FILE||'.env.local';
  let text=fs.existsSync(secretFile)?fs.readFileSync(secretFile,'utf8'):'';

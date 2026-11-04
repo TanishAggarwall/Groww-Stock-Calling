@@ -1,9 +1,9 @@
-import {PGlite} from '@electric-sql/pglite';
+import {database} from './database-client.ts';
 import fs from 'node:fs';
 import {companies,seedEvents} from './catalog.ts';
 const dataDir=process.env.DATA_DIR||'data';
 fs.mkdirSync(dataDir,{recursive:true});
-export const db=new PGlite(process.env.TEST_DB||`${dataDir}/postgres`);
+export const db=database(process.env.TEST_DB||`${dataDir}/postgres`);
 await db.exec(`
  CREATE TABLE IF NOT EXISTS settings (id integer PRIMARY KEY DEFAULT 1 CHECK(id=1), data jsonb NOT NULL);
  CREATE TABLE IF NOT EXISTS companies (id text PRIMARY KEY, data jsonb NOT NULL, monitored boolean DEFAULT true);
