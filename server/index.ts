@@ -18,7 +18,10 @@ app.use('/api',express.json({limit:'32kb'}));
 app.use('/api',(req,res,next)=>{
  if(!['localhost','127.0.0.1'].includes(req.hostname))return res.status(403).json({error:'Local access only'});
  const origin=req.headers.origin;
- if(origin&&!['http://localhost:'+port,'http://127.0.0.1:'+port].includes(origin))return res.status(403).json({error:'Origin rejected'});
+ const allowed=['http://localhost:'+port,'http://127.0.0.1:'+port,process.env.FRONTEND_ORIGIN].filter(Boolean);
+ if(origin&&!allowed.includes(origin))return res.status(403).json({error:'Origin rejected'});
+ if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type');res.setHeader('Access-Control-Allow-Private-Network','true');}
+ if(req.method==='OPTIONS')return res.status(204).end();
  if(!['GET','HEAD'].includes(req.method)&&!req.is('application/json'))return res.status(415).json({error:'JSON required'});
  res.setHeader('Cache-Control','no-store');next();
 });

@@ -3,7 +3,8 @@ import {createRoot} from 'react-dom/client';
 import {Activity,ArrowDownLeft,ShoppingCart,ArrowRight,ArrowUpRight,Bell,Bookmark,Check,CheckCircle2,ChevronDown,ChevronRight,Clock,ExternalLink,FileText,Headphones,Leaf,Loader2,Phone,PhoneCall,Radio,RefreshCw,Search,Send,Settings2,ShieldCheck,SlidersHorizontal,Sparkles,Target,TrendingUp,Users,X} from 'lucide-react';
 import './style.css';
 type Data=any;
-async function api(url:string,body?:any){const r=await fetch('/api'+url,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok)throw new Error(d.error||'Request failed');return d;}
+const apiBase=location.hostname.endsWith('.vercel.app')?'http://127.0.0.1:3000/api':'/api';
+async function api(url:string,body?:any){let r:Response;try{r=await fetch(apiBase+url,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined});}catch{throw new Error('Start Stock Calling from the desktop icon, then allow local network access in Chrome. This site connects to the backend on this laptop.');}const d=await r.json();if(!r.ok)throw new Error(d.error||'Request failed');return d;}
 const money=(v:number|null|undefined)=>v==null?'Unavailable':new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(v);
 const date=(v:string)=>new Date(v).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 const time=(v:string)=>new Date(v).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
@@ -18,7 +19,7 @@ function App(){
  useEffect(()=>{if(toast){const t=setTimeout(()=>setToast(''),8000);return()=>clearTimeout(t);}},[toast]);
  function nav(s:string){setScreen(s);history.replaceState(null,'',`?screen=${s}`);window.scrollTo({top:0,behavior:'smooth'});}
  async function action(name:string,fn:()=>Promise<any>,success?:string){setBusy(name);try{const result=await fn();await load();if(success)setToast(success);return result;}catch(e:any){setToast(e.message);}finally{setBusy('');}}
- if(!data)return <div className="loading"><Loader2 className="spin"/><p>{toast||'Connecting your impact workspace…'}</p></div>;
+ if(!data)return <div className="loading"><Loader2 className="spin"/><p>{toast||'Connecting your impact workspace…'}</p>{location.hostname.endsWith('.vercel.app')&&<><p>Open Stock Calling from the desktop shortcut and allow this site to access your laptop when Chrome asks.</p><button className="greenbutton" onClick={()=>{load().catch(e=>setToast(e.message));api('/market').then(setMarket).catch(e=>setToast(e.message));}}>Retry connection</button></>}</div>;
  const companies=data.companies,watched=companies.filter((c:any)=>c.monitored),events=data.events,verified=events.filter((e:any)=>e.verified),filtered=events.filter((e:any)=>(category==='All updates'||e.category===category||category==='Verified'&&e.verified)&&(!search||(e.title+' '+companies.find((c:any)=>c.id===e.companyId)?.name).toLowerCase().includes(search.toLowerCase()))),c=companies.find((c:any)=>c.id===company),quote=(symbol:string)=>market.quotes.find((q:any)=>q.symbol===symbol),e=events.find((e:any)=>e.id===selectedEvent),connected=data.integrations.omniKey&&data.integrations.agentId;
  const openCompany=(id:string)=>{setCompany(id);nav('company');};
  const refresh=()=>action('refresh',async()=>{const m=await api('/market/refresh',{});setMarket(m);},'Market quotes refreshed');
