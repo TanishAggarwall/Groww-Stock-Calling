@@ -1,5 +1,11 @@
 # Northflank backend
 
+Hosted dashboard/API: https://http--groww-stock-api--zptn6fs9b2zg.code.run
+
+Public readiness: https://http--groww-stock-api--zptn6fs9b2zg.code.run/health
+
+Northflank resources in the Default project: `groww-stock-api` and private `groww-postgres`. Both Vercel deployments are unchanged; the cloud dashboard is independently usable without the laptop. The generated dashboard password is provided locally in `data/Northflank Access.txt` and must never be committed.
+
 Deploy branch `deploy/northflank` using its root Dockerfile. This branch leaves the Vercel frontend source and submission project unchanged.
 
 - Use the private `groww-postgres` managed PostgreSQL addon via `DATABASE_URL`. Northflank's free standalone-volume allowance is already used by another app, so this backend uses the available free database allowance instead. Keep one backend instance to avoid duplicate polling workers.
