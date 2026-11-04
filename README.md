@@ -234,6 +234,14 @@ npm start
 
 Open **http://localhost:3000**. For frontend hot reloading, use `npm run dev`; restart the server after backend changes.
 
+### Vercel frontend + laptop backend
+
+The Vercel deployment hosts the React frontend. The database, OmniDimension calls, Telegram delivery and monitoring still run on the owner's laptop. On the configured Windows laptop, double-click the **Stock Calling** desktop shortcut. It runs `Start-Stock-Calling.ps1`, waits for the backend, and opens **https://groww-stock-calling.vercel.app**. Keep its PowerShell window open while using the app.
+
+The hosted page connects to `http://127.0.0.1:3000` on the **same laptop**. When Chrome asks for local network access, allow it for this site. This setup does not expose the local API to the Internet; the API listens only on loopback and accepts the configured Vercel origin. If the laptop is off, the public frontend loads but live portfolio, call and Telegram features cannot connect. The hosted UI is not usable from another device without a separate backend deployment.
+
+For another deployment, set `FRONTEND_ORIGIN` in `.env.local` to its exact HTTPS origin and change the frontend's `apiBase` in `src/main.tsx` if needed. Keep `PORT=3000` for the current Vercel frontend.
+
 No separate PostgreSQL service is required. The local database is initialized automatically under `data/postgres`.
 
 ### Connect the integrations
@@ -245,7 +253,7 @@ No separate PostgreSQL service is required. The local database is initialized au
 5. Open the unique private registration link in Telegram and tap **Start**. Registration checks run automatically; only a matching private-chat start code can pair the workspace.
 6. Send a Telegram test and use **Portfolio / Holdings** to buy paper shares and try a price scenario.
 
-The server binds to **127.0.0.1** for this single-user local demo. Keep it running for monitoring, transcript sync and queued Telegram delivery. The localhost link in Telegram opens on the laptop; it is not a remotely hosted deployment.
+The server binds to **127.0.0.1** for this single-user demo. Keep it running for monitoring, transcript sync and queued Telegram delivery. Set `APP_URL` to the Vercel URL when using the hosted frontend so Telegram links open the deployed page.
 
 <details>
 <summary><strong>Configuration reference</strong></summary>
@@ -254,6 +262,7 @@ The server binds to **127.0.0.1** for this single-user local demo. Keep it runni
 |---|---|
 | `PORT` | Local API/UI port; defaults to `3000`. |
 | `APP_URL` | Dashboard URL included in notifications. |
+| `FRONTEND_ORIGIN` | Exact Vercel HTTPS origin permitted to access the loopback API from the owner's browser. |
 | `OMNIDIM_API_KEY` | Server-side voice-provider credential. |
 | `OMNIDIM_AGENT_ID` | Created/configured voice agent; may be left blank initially. |
 | `TELEGRAM_BOT_TOKEN` | Server-side BotFather token. |
