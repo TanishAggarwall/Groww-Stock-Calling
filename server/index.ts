@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config({path:'.env.local',quiet:true});dotenv.config({quiet:true});
+if(process.env.SECRET_FILE)dotenv.config({path:process.env.SECRET_FILE,quiet:true,override:true});
 const {db,rows,settings,saveSettings}=await import('./db.ts');
 const {omni,telegram,telegramHealth,saveSecret,configureAgent,registerChat,dispatch,syncCalls,sendPending}=await import('./integrations.ts');
 const {market}=await import('./market.ts');
@@ -12,13 +13,24 @@ import {z} from 'zod';
 import path from 'node:path';
 import crypto from 'node:crypto';
 const app=express(),port=Number(process.env.PORT||3000);
+const cloud=process.env.CLOUD_MODE==='true';
+if(cloud&&(!process.env.DASHBOARD_PASSWORD||process.env.DASHBOARD_PASSWORD.length<20))throw new Error('Cloud deployment requires DASHBOARD_PASSWORD of at least 20 characters.');
+if(cloud)app.set('trust proxy',1);
 app.use(helmet({contentSecurityPolicy:false}));
+app.get('/health',(_req,res)=>res.json({status:'ok'}));
+if(cloud)app.use((req,res,next)=>{
+ const raw=String(req.headers.authorization||'');
+ const expected='team-bb:'+process.env.DASHBOARD_PASSWORD;
+ const supplied=raw.startsWith('Basic ')?Buffer.from(raw.slice(6),'base64').toString():'';
+ if(!crypto.timingSafeEqual(crypto.createHash('sha256').update(supplied).digest(),crypto.createHash('sha256').update(expected).digest())){res.setHeader('WWW-Authenticate','Basic realm="Team BB Stock Calling", charset="UTF-8"');return res.status(401).json({error:'Dashboard login required'});}
+ next();
+});
 app.use('/api',express.json({limit:'32kb'}));
 // This single-user local app only accepts its own browser origin and loopback hosts.
 app.use('/api',(req,res,next)=>{
- if(!['localhost','127.0.0.1'].includes(req.hostname))return res.status(403).json({error:'Local access only'});
+ if(!cloud&&!['localhost','127.0.0.1'].includes(req.hostname))return res.status(403).json({error:'Local access only'});
  const origin=req.headers.origin;
- const allowed=['http://localhost:'+port,'http://127.0.0.1:'+port,process.env.FRONTEND_ORIGIN].filter(Boolean);
+ const allowed=['http://localhost:'+port,'http://127.0.0.1:'+port,process.env.FRONTEND_ORIGIN,process.env.APP_URL].filter(Boolean);
  if(origin&&!allowed.includes(origin))return res.status(403).json({error:'Origin rejected'});
  if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type');res.setHeader('Access-Control-Allow-Private-Network','true');}
  if(req.method==='OPTIONS')return res.status(204).end();
@@ -67,7 +79,7 @@ if(process.argv.includes('--production')){app.use(express.static('dist'));app.ge
 else{const {createServer}=await import('vite');const vite=await createServer({server:{middlewareMode:true},appType:'spa'});app.use(vite.middlewares);}
 // Mark interrupted deliveries as uncertain; never automatically duplicate them after a restart.
 await db.query("UPDATE messages SET status='unknown',error='Delivery interrupted; check Telegram before retrying.' WHERE status='sending'");
-app.listen(port,'127.0.0.1',()=>console.log(`ImpactCall ready at http://localhost:${port}`));
+app.listen(port,cloud?'0.0.0.0':'127.0.0.1',()=>console.log(`Stock Calling ready on port ${port}`));
 sendPending().catch(()=>{});
 setInterval(()=>{syncCalls().catch(()=>{});sendPending().catch(()=>{});},20000).unref();
 setInterval(async()=>{if((await settings()).autoMonitor)monitor().catch(()=>{});},30*60000).unref();

@@ -8,9 +8,10 @@ import {processPaperSale,redactDemoPin} from './paper-sell.ts';
 export function saveSecret(key:string,value:string){
  if(!/^(OMNIDIM_API_KEY|OMNIDIM_AGENT_ID|TELEGRAM_BOT_TOKEN)$/.test(key)||/[\r\n]/.test(value))throw new Error('Invalid secret');
  process.env[key]=value;
- let text=fs.existsSync('.env.local')?fs.readFileSync('.env.local','utf8'):'';
+ const secretFile=process.env.SECRET_FILE||'.env.local';
+ let text=fs.existsSync(secretFile)?fs.readFileSync(secretFile,'utf8'):'';
  text=text.split('\n').filter(l=>!l.startsWith(key+'=')).join('\n').trim();
- fs.writeFileSync('.env.local',`${text}\n${key}=${value}\n`,{mode:0o600});
+ fs.writeFileSync(secretFile,`${text}\n${key}=${value}\n`,{mode:0o600});
 }
 export async function omni(path:string,body?:any,method?:string){
  if(!process.env.OMNIDIM_API_KEY)throw new Error('Connect your OmniDimension API key in Settings.');
